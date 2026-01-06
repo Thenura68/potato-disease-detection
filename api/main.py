@@ -9,12 +9,7 @@ import requests
 
 app = FastAPI()
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # api/
-MODEL_PATH = os.path.join(BASE_DIR, "..", "models", "1.keras")
-
-MODEL = tf.keras.models.load_model(MODEL_PATH)
-
-print("Model loaded from:", MODEL_PATH)
+endpoint = "http://localhost:8502/v1/models/potatoes_model:predict"
 
 CLASS_NAMES = ["Early Blight" , "Late Blight" , "Healthy"]
 
@@ -38,17 +33,17 @@ async def predict(
     json_data = {
         "instances" : img_batch.tolist()
     }
-    
-    response = requests.post(endpoint, json=json_data)
+
+    response = requests.post(endpoint , json=json_data)
     prediction = np.array(response.json()["predictions"][0])
 
     predicted_class = CLASS_NAMES[np.argmax(prediction)]
     confidence = np.max(prediction)
-
     return{
-        "class":predicted_class,
-        "confidence":confidence
+        'class': predicted_class,
+        'confidence' : float(confidence)
     }
+    
 
 if __name__ == "__main__":
     uvicorn.run(app, host='localhost', port=8000)
